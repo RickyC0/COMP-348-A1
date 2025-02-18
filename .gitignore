@@ -50,3 +50,7 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+comp348.a01.assignment-i.pdf
+
+*.txt
