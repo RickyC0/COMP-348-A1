@@ -134,6 +134,62 @@ struct file_changes* change_file_RC(char* buffer, size_t read_size, size_t word_
             
             // Ask the user for confirmation using the full line.
             // (Here we use changes->nb_lines + 1 to represent the current line number.)
+            if(global_apply_all==0){
+                int decision = confirm_User_Changes(old_line, changes->nb_lines + 1, new_line, changes->nb_lines + 1);
+                if (decision == 3) { // Quit.
+                    return changes;
+                } else if (decision == 1) { // Reject this occurrence.
+                    i += word_len - 1;
+                    continue;
+                } else if (decision == 2) { // Apply all changes without further prompting.
+                    global_apply_all = 1;
+                }
+            }
+            // If decision is 0 (Yes) or 2 (All), proceed with replacement.
+            replace_Word(buffer, word_len, i, '*');
+            changes->nb_words_changed++;
+            if (!line_changed) {
+                changes->nb_lines_changed++;
+                line_changed = 1;
+            }
+            // Skip past the replaced word.
+            i += word_len - 1;
+        }
+    }
+    
+    // If the file does not end with a newline, count the last line.
+    if (read_size > 0 && buffer[read_size - 1] != '\n') {
+        changes->nb_lines++;
+    }
+    return changes;
+}
+            // Determine the start of the current line.
+            size_t line_start = i;
+            while (line_start > 0 && buffer[line_start - 1] != '\n') {
+                line_start--;
+            }
+            // Determine the end of the current line.
+            size_t line_end = i;
+            while (line_end < read_size && buffer[line_end] != '\n') {
+                line_end++;
+            }
+            size_t line_length = line_end - line_start;
+            
+            // Create temporary buffers for the full original line and the modified line.
+            char old_line[line_length + 1];
+            char new_line[line_length + 1];
+            memcpy(old_line, &buffer[line_start], line_length);
+            old_line[line_length] = '\0';
+            memcpy(new_line, old_line, line_length + 1);  // Copy the entire line.
+            
+            // Replace the occurrence in new_line with asterisks.
+            size_t pos_in_line = i - line_start;  // position relative to the beginning of the line.
+            for (size_t j = 0; j < word_len; j++) {
+                new_line[pos_in_line + j] = '*';
+            }
+            
+            // Ask the user for confirmation using the full line.
+            // (Here we use changes->nb_lines + 1 to represent the current line number.)
             int decision = confirm_User_Changes(old_line, changes->nb_lines + 1, new_line, changes->nb_lines + 1);
             if (decision == 3) { // Quit.
                 return changes;
