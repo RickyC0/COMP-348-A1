@@ -23,17 +23,20 @@ struct file_changes* process_command(int command, char* buffer, size_t read_size
             changes=change_file_RC(buffer,read_size,word_len,word,changes);
             return changes;
         case CMD_RI:
-            // Insert RI-specific logic here.
+            
             printf("Processing command RI.\n");
-            break;
+            changes=change_file_RI(buffer,read_size,word_len,word,changes);
+            return changes;
+
         case CMD_UK:
-            // Insert UK-specific logic here.
             printf("Processing command UK.\n");
             break;
+
         case CMD_UM:
-            // Insert UM-specific logic here.
+            
             printf("Processing command UM.\n");
             break;
+
         default:
             fprintf(stderr, "Invalid command code: %d\n", command);
             break;
@@ -163,6 +166,23 @@ struct file_changes* change_file_RC(char* buffer, size_t read_size, size_t word_
     }
     return changes;
 }
+
+struct file_changes* change_file_RI(char* buffer, size_t read_size, size_t word_len, char* word, struct file_changes* changes){
+    int line_changed = 0;
+    for (size_t i = 0; i < read_size; i++) {
+        // Count lines: every newline marks the end of a line.
+        if (buffer[i] == '\n') {
+            changes->nb_lines++;
+            line_changed = 0; // Reset for the new line.
+        }
+
+        char lower_case_word[word_len + 1];
+        strncpy(lower_case_word, &buffer[i], word_len);
+        lower_case_word[word_len] = '\0'; // Ensure null termination.
+        strlwr(lower_case_word);
+
+        // Check if the target word occurs at this position.
+        if (i <= read_size - word_len && strncmp(lower_case_word, word, word_len) == 0) {
             // Determine the start of the current line.
             size_t line_start = i;
             while (line_start > 0 && buffer[line_start - 1] != '\n') {
@@ -190,14 +210,16 @@ struct file_changes* change_file_RC(char* buffer, size_t read_size, size_t word_
             
             // Ask the user for confirmation using the full line.
             // (Here we use changes->nb_lines + 1 to represent the current line number.)
-            int decision = confirm_User_Changes(old_line, changes->nb_lines + 1, new_line, changes->nb_lines + 1);
-            if (decision == 3) { // Quit.
-                return changes;
-            } else if (decision == 1) { // Reject this occurrence.
-                i += word_len - 1;
-                continue;
-            } else if (decision == 2) { // Apply all changes without further prompting.
-                global_apply_all = 1;
+            if(global_apply_all==0){
+                int decision = confirm_User_Changes(old_line, changes->nb_lines + 1, new_line, changes->nb_lines + 1);
+                if (decision == 3) { // Quit.
+                    return changes;
+                } else if (decision == 1) { // Reject this occurrence.
+                    i += word_len - 1;
+                    continue;
+                } else if (decision == 2) { // Apply all changes without further prompting.
+                    global_apply_all = 1;
+                }
             }
             // If decision is 0 (Yes) or 2 (All), proceed with replacement.
             replace_Word(buffer, word_len, i, '*');
@@ -210,10 +232,11 @@ struct file_changes* change_file_RC(char* buffer, size_t read_size, size_t word_
             i += word_len - 1;
         }
     }
-    
-    // If the file does not end with a newline, count the last line.
-    if (read_size > 0 && buffer[read_size - 1] != '\n') {
+
+     // If the file does not end with a newline, count the last line.
+     if (read_size > 0 && buffer[read_size - 1] != '\n') {
         changes->nb_lines++;
-    }
+     }
+    
     return changes;
 }
