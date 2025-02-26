@@ -132,6 +132,6 @@ struct file_changes* change_file_UK(char* buffer, size_t read_size, size_t word_
  */
 struct file_changes* change_file_UM(char* buffer, size_t read_size, size_t word_len, char* word, struct file_changes* changes);
 
-
+int check_exact_asterisk(size_t word_len, size_t read_size, char* buffer, int index);
 
 #endif

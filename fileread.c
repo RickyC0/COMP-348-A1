@@ -44,7 +44,7 @@ struct file_changes* process_command(int command, char* buffer, size_t read_size
     }
 }
 
-//TODO 
+
 struct file_changes* search_and_change_file(FILE* file, char* word, int command,struct file_changes* changes) {
     size_t word_len = strlen(word);
 
@@ -284,7 +284,7 @@ struct file_changes* change_file_UK(char* buffer, size_t read_size, size_t word_
             break;
         }
 
-        int is_exact_asterisks = 1;
+        int is_exact_asterisks = check_exact_asterisk(word_len,read_size,buffer,i);
         for (size_t j = 0; j < word_len; j++) {
             if (buffer[i + j] != '*') {
                 is_exact_asterisks = 0;
@@ -370,4 +370,27 @@ struct file_changes* change_file_UK(char* buffer, size_t read_size, size_t word_
      }
     
     return changes;
+}
+
+int check_exact_asterisk(size_t word_len, size_t read_size, char* buffer, int index){
+    int is_exact_asterisks=1;
+    for (size_t j = 0; j < word_len; j++) {
+        if (buffer[index + j] != '*') {
+            is_exact_asterisks = 0;
+            break;
+        }
+    }
+
+    // Verify that the sequence is not part of a longer asterisk run.
+    if (is_exact_asterisks) {
+        // Check the character before the sequence (if any)
+        if (index > 0 && buffer[index - 1] == '*') {
+            is_exact_asterisks = 0;
+        }
+        // Check the character after the sequence (if any)
+        if (index + word_len < read_size && buffer[index + word_len] == '*') {
+            is_exact_asterisks = 0;
+        }
+    }
+    return is_exact_asterisks;
 }
