@@ -101,6 +101,15 @@ struct file_changes* search_and_change_file(FILE* file, char* word, int command,
 
 struct file_changes* change_file_RC(char* buffer, size_t read_size, size_t word_len, char* word, struct file_changes* changes) {
     int line_changed = 0;
+
+    char asterisk_word[word_len + 1];
+
+    for(int i=0;i<word_len;i++){
+        asterisk_word[i]='*';
+    }
+
+    asterisk_word[word_len]='\0';
+
     for (size_t i = 0; i < read_size; i++) {
         // Count lines: every newline marks the end of a line.
         if (buffer[i] == '\n') {
@@ -149,7 +158,9 @@ struct file_changes* change_file_RC(char* buffer, size_t read_size, size_t word_
                 }
             }
             // If decision is 0 (Yes) or 2 (All), proceed with replacement.
-            replace_Word(buffer, word_len, i, '*');
+            
+
+            replace_Word(buffer, word_len, i, asterisk_word);
             changes->nb_words_changed++;
             if (!line_changed) {
                 changes->nb_lines_changed++;
@@ -169,6 +180,15 @@ struct file_changes* change_file_RC(char* buffer, size_t read_size, size_t word_
 
 struct file_changes* change_file_RI(char* buffer, size_t read_size, size_t word_len, char* word, struct file_changes* changes){
     int line_changed = 0;
+
+    char asterisk_word[word_len + 1];
+
+    for(int i=0;i<word_len;i++){
+        asterisk_word[i]='*';
+    }
+
+    asterisk_word[word_len]='\0';
+
     for (size_t i = 0; i < read_size; i++) {
         // Count lines: every newline marks the end of a line.
         if (buffer[i] == '\n') {
@@ -222,7 +242,7 @@ struct file_changes* change_file_RI(char* buffer, size_t read_size, size_t word_
                 }
             }
             // If decision is 0 (Yes) or 2 (All), proceed with replacement.
-            replace_Word(buffer, word_len, i, '*');
+            replace_Word(buffer, word_len, i, asterisk_word);
             changes->nb_words_changed++;
             if (!line_changed) {
                 changes->nb_lines_changed++;
@@ -232,6 +252,15 @@ struct file_changes* change_file_RI(char* buffer, size_t read_size, size_t word_
             i += word_len - 1;
         }
     }
+
+     // If the file does not end with a newline, count the last line.
+     if (read_size > 0 && buffer[read_size - 1] != '\n') {
+        changes->nb_lines++;
+     }
+    
+    return changes;
+}
+
 
      // If the file does not end with a newline, count the last line.
      if (read_size > 0 && buffer[read_size - 1] != '\n') {
