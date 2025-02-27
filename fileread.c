@@ -188,6 +188,13 @@ struct file_changes* change_file_RI(char* buffer, size_t read_size, size_t word_
 
     asterisk_word[word_len]='\0';
 
+    //Make the given word case insensitive
+    char given_word_lower_case[word_len+1];
+    for (size_t i = 0; i < word_len; i++) {
+        given_word_lower_case[i] = tolower(word[i]);
+    }
+    given_word_lower_case[word_len] = '\0';
+
     for (size_t i = 0; i < read_size; i++) {
         // Count lines: every newline marks the end of a line.
         if (buffer[i] == '\n') {
@@ -201,7 +208,7 @@ struct file_changes* change_file_RI(char* buffer, size_t read_size, size_t word_
         strlwr(lower_case_word);
 
         // Check if the target word occurs at this position.
-        if (i <= read_size - word_len && strncmp(lower_case_word, word, word_len) == 0) {
+        if (i <= read_size - word_len && strncmp(lower_case_word, given_word_lower_case, word_len) == 0) {
             // Determine the start of the current line.
             size_t line_start = i;
             while (line_start > 0 && buffer[line_start - 1] != '\n') {
