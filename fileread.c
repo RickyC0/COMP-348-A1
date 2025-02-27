@@ -82,8 +82,19 @@ struct file_changes* search_and_change_file(FILE* file, char* word, int command,
     }
     changes->nb_words = total_words;
 
-    // Process the buffer: perform replacements and count changes.
-    changes=process_command(command,buffer,read_size,word_len,word,changes);
+    // Count total lines in the file
+    int total_lines = 0;
+    for (size_t i = 0; i < read_size; i++) {
+        if (buffer[i] == '\n') {
+            total_lines++;
+        }
+    }
+    // If the file is not empty and doesn't end with a newline, count the last line
+    if (read_size > 0) {
+        total_lines++;
+    }
+    changes->nb_lines = total_lines;
+
 
     // Write the modified buffer back to the file.
     rewind(file);
@@ -109,10 +120,12 @@ struct file_changes* change_file_RC(char* buffer, size_t read_size, size_t word_
 
     asterisk_word[word_len]='\0';
 
+    int current_line=0;
+
     for (size_t i = 0; i < read_size; i++) {
         // Count lines: every newline marks the end of a line.
         if (buffer[i] == '\n') {
-            changes->nb_lines++;
+            current_line++;
             line_changed = 0; // Reset for the new line.
         }
         
@@ -146,9 +159,9 @@ struct file_changes* change_file_RC(char* buffer, size_t read_size, size_t word_
             // Ask the user for confirmation using the full line.
             // (Here we use changes->nb_lines + 1 to represent the current line number.)
             if(global_apply_all==0){
-                int decision = confirm_User_Changes(old_line, changes->nb_lines + 1, new_line, changes->nb_lines + 1);
+                int decision = confirm_User_Changes(old_line, current_line + 1, new_line, current_line + 1);
                 if (decision == 3) { // Quit.
-                    return changes;
+                    break;
                 } else if (decision == 1) { // Reject this occurrence.
                     i += word_len - 1;
                     continue;
@@ -169,11 +182,7 @@ struct file_changes* change_file_RC(char* buffer, size_t read_size, size_t word_
             i += word_len - 1;
         }
     }
-    
-    // If the file does not end with a newline, count the last line.
-    if (read_size > 0 && buffer[read_size - 1] != '\n') {
-        changes->nb_lines++;
-    }
+ 
     return changes;
 }
 
@@ -195,10 +204,12 @@ struct file_changes* change_file_RI(char* buffer, size_t read_size, size_t word_
     }
     given_word_lower_case[word_len] = '\0';
 
+    int current_line=0;
+
     for (size_t i = 0; i < read_size; i++) {
         // Count lines: every newline marks the end of a line.
         if (buffer[i] == '\n') {
-            changes->nb_lines++;
+            current_line++;
             line_changed = 0; // Reset for the new line.
         }
 
@@ -237,9 +248,9 @@ struct file_changes* change_file_RI(char* buffer, size_t read_size, size_t word_
             // Ask the user for confirmation using the full line.
             // (Here we use changes->nb_lines + 1 to represent the current line number.)
             if(global_apply_all==0){
-                int decision = confirm_User_Changes(old_line, changes->nb_lines + 1, new_line, changes->nb_lines + 1);
+                int decision = confirm_User_Changes(old_line, current_line + 1, new_line, current_line + 1);
                 if (decision == 3) { // Quit.
-                    return changes;
+                    break;
                 } else if (decision == 1) { // Reject this occurrence.
                     i += word_len - 1;
                     continue;
@@ -259,18 +270,13 @@ struct file_changes* change_file_RI(char* buffer, size_t read_size, size_t word_
         }
     }
 
-     // If the file does not end with a newline, count the last line.
-     if (read_size > 0 && buffer[read_size - 1] != '\n') {
-        changes->nb_lines++;
-     }
-    
     return changes;
 }
 
 struct file_changes* change_file_UK(char* buffer, size_t read_size, size_t word_len, char* word, struct file_changes* changes) {
     int line_changed = 0;
 
-    // Build the asterisk sequence of length word_len.
+    int current_line=1;
     char asterisk_seq[word_len + 1];
     for (size_t k = 0; k < word_len; k++) {
         asterisk_seq[k] = '*';
@@ -280,7 +286,7 @@ struct file_changes* change_file_UK(char* buffer, size_t read_size, size_t word_
     for (size_t i = 0; i < read_size; i++) {
         // Count newlines.
         if (buffer[i] == '\n') {
-            changes->nb_lines++;
+            current_line++;
             line_changed = 0; // Reset for the new line.
         }
 
@@ -337,9 +343,9 @@ struct file_changes* change_file_UK(char* buffer, size_t read_size, size_t word_
 
             // Confirm the change with the user.
             if (global_apply_all == 0) {
-                int decision = confirm_User_Changes(old_line, changes->nb_lines + 1, new_line, changes->nb_lines + 1);
+                int decision = confirm_User_Changes(old_line, current_line, new_line, current_line);
                 if (decision == 3) { // Quit.
-                    return changes;
+                    break;
                 } else if (decision == 1) { // Reject this occurrence.
                     i += word_len - 1;
                     continue;
@@ -360,21 +366,18 @@ struct file_changes* change_file_UK(char* buffer, size_t read_size, size_t word_
         }
     }
 
-    // If the file does not end with a newline, count the last line.
-    if (read_size > 0 && buffer[read_size - 1] != '\n') {
-        changes->nb_lines++;
-    }
-
     return changes;
 }
 
 struct file_changes* change_file_UM(char* buffer, size_t read_size, size_t word_len, char* word, struct file_changes* changes){
     int line_changed = 0;
 
+    int current_line=1;
+
     for (size_t i = 0; i < read_size; i++) {
         // Count newlines.
         if (buffer[i] == '\n') {
-            changes->nb_lines++;
+            current_line++;
             line_changed = 0; // Reset for the new line
         }
 
@@ -441,9 +444,9 @@ struct file_changes* change_file_UM(char* buffer, size_t read_size, size_t word_
 
             // Ask the user for confirmation.
             if (global_apply_all == 0) {
-                int decision = confirm_User_Changes(old_line, changes->nb_lines + 1, new_line, changes->nb_lines + 1);
+                int decision = confirm_User_Changes(old_line, current_line, new_line, current_line);
                 if (decision == 3) { // Quit.
-                    return changes;
+                    break;
                 } else if (decision == 1) { // Reject this occurrence
                     i += word_len - 1;
                     continue;
@@ -462,11 +465,6 @@ struct file_changes* change_file_UM(char* buffer, size_t read_size, size_t word_
             // Skip past the replaced word.
             i += word_len - 1;
         }
-    }
-
-    // If the file does not end with a newline, count the last line
-    if (read_size > 0 && buffer[read_size - 1] != '\n') {
-        changes->nb_lines++;
     }
 
     return changes;
