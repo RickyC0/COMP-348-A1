@@ -95,25 +95,29 @@ int confirm_User_Changes(char* old, int oldNb, char* new, int newNb){
         }
         
         
-        if (strcmp(answer, "yes") == 0) {
+        if (strcmp(answer, "yes") == 0 || strcmp(answer, "y") == 0) {
+            printf("\n");
             return 0;  // Confirm change.
-        } else if (strcmp(answer, "no") == 0) {
+        } else if (strcmp(answer, "no")== 0 || strcmp(answer, "n") == 0)  {
+            printf("\n");
             return 1;  // Reject this change, continue asking.
-        } else if (strcmp(answer, "all") == 0) {
+        } else if (strcmp(answer, "all") == 0 || strcmp(answer, "a") == 0) {
+            printf("\n");
             return 2;  // Apply all changes without asking again.
-        } else if (strcmp(answer, "quit") == 0) {
+        } else if (strcmp(answer, "quit")==0 || strcmp(answer, "q") == 0) {
+            printf("\n");
             return 3;  // Exit the process.
         } else {
-            printf("Invalid input. Please enter Yes, No, All, or Quit.\n");
+            printf("Invalid input. Please enter Yes (y), No (n), All (a), or Quit (q).\n");
         }
     }
 }
 
-void display_changes(struct file_changes* changes){
-    printf("Changed %d word(s) out of %d, in %d line(s) out of %d.\n", 
-        changes->nb_words_changed, 
-        changes->nb_words,
-        changes->nb_lines_changed,
-        changes->nb_lines
-    );
+void display_changes(struct file_changes* changes) {
+    printf("========================================\n");
+    printf("         File Changes Summary           \n");
+    printf("========================================\n");
+    printf("Words changed : %d out of %d\n", changes->nb_words_changed, changes->nb_words);
+    printf("Lines changed : %d out of %d\n", changes->nb_lines_changed, changes->nb_lines);
+    printf("========================================\n");
 }
