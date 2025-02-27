@@ -1,5 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include "ui.h"
 
 const char* user_answers[] = {"Yes", "No", "All", "Quit"};

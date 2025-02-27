@@ -1,10 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include "fileread.h"
 #include "wreplace.h"
 #include "kode.h"
-#include <string.h>
-#include <ctype.h>
+
 
 static int global_apply_all = 0;
 
@@ -97,7 +94,7 @@ struct file_changes* search_and_change_file(FILE* file, char* word, int command,
             total_lines++;
         }
     }
-    // If the file is not empty and doesn't end with a newline, count the last line
+    // If the file is not empty, count the last line
     if (read_size > 0) {
         total_lines++;
     }
