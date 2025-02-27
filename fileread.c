@@ -80,7 +80,7 @@ struct file_changes* search_and_change_file(FILE* file, char* word, int command,
             in_word = 1;
         }
     }
-    changes->nbwords = total_words;
+    changes->nb_words = total_words;
 
     // Process the buffer: perform replacements and count changes.
     changes=process_command(command,buffer,read_size,word_len,word,changes);

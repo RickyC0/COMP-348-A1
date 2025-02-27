@@ -7,7 +7,7 @@
 #include <ctype.h>
 
 struct file_changes{
-    int nb_lines, nb_lines_changed, nbwords, nb_words_changed;
+    int nb_lines, nb_lines_changed, nb_words, nb_words_changed;
 
 };
 

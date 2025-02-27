@@ -110,7 +110,10 @@ int confirm_User_Changes(char* old, int oldNb, char* new, int newNb){
 }
 
 void display_changes(struct file_changes* changes){
-    printf("Changed %d word(s) in %d line(s).\n", 
+    printf("Changed %d word(s) out of %d, in %d line(s) out of %d.\n", 
         changes->nb_words_changed, 
-        changes->nb_lines_changed);
+        changes->nb_words,
+        changes->nb_lines_changed,
+        changes->nb_lines
+    );
 }
