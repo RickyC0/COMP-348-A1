@@ -43,10 +43,10 @@ struct file_changes* process_command(int command, char* buffer, size_t read_size
 }
 
 
-struct file_changes* search_and_change_file(FILE* file, char* word, int command,struct file_changes* changes) {
+struct file_changes* search_and_change_file(FILE* file, char* word, int command, struct file_changes* changes) {
     size_t word_len = strlen(word);
 
-    // Determine file size.
+    // Determine file size
     if (fseek(file, 0, SEEK_END) != 0) {
         perror("fseek");
         exit(EXIT_FAILURE);
@@ -58,18 +58,18 @@ struct file_changes* search_and_change_file(FILE* file, char* word, int command,
     }
     rewind(file);
 
-    // Allocate a buffer for the entire file (plus a null terminator).
+    // Allocate a buffer for the entire file (plus a null terminator)
     char *buffer = malloc(file_size + 1);
     if (buffer == NULL) {
         perror("malloc");
         exit(EXIT_FAILURE);
     }
 
-    // Read the entire file into memory.
+    // Read the entire file into memory
     size_t read_size = fread(buffer, 1, file_size, file);
     buffer[read_size] = '\0';
 
-    // Count total words in the file.
+    // Count total words in the file
     int total_words = 0;
     int in_word = 0;
     for (size_t i = 0; i < read_size; i++) {
@@ -95,8 +95,10 @@ struct file_changes* search_and_change_file(FILE* file, char* word, int command,
     }
     changes->nb_lines = total_lines;
 
+    // Process the buffer: perform replacements and count changes
+    changes = process_command(command, buffer, read_size, word_len, word, changes);
 
-    // Write the modified buffer back to the file.
+    // Write the modified buffer back to the file
     rewind(file);
     if (fwrite(buffer, 1, read_size, file) != read_size) {
         perror("fwrite");
@@ -123,41 +125,40 @@ struct file_changes* change_file_RC(char* buffer, size_t read_size, size_t word_
     int current_line=0;
 
     for (size_t i = 0; i < read_size; i++) {
-        // Count lines: every newline marks the end of a line.
+        // Count lines: every newline marks the end of a line
         if (buffer[i] == '\n') {
             current_line++;
-            line_changed = 0; // Reset for the new line.
+            line_changed = 0; // Reset for the new line
         }
         
-        // Check if the target word occurs at this position.
+        // Check if the target word occurs at this position
         if (i <= read_size - word_len && strncmp(&buffer[i], word, word_len) == 0) {
-            // Determine the start of the current line.
+            // Determine the start of the current line
             size_t line_start = i;
             while (line_start > 0 && buffer[line_start - 1] != '\n') {
                 line_start--;
             }
-            // Determine the end of the current line.
+            // Determine the end of the current line
             size_t line_end = i;
             while (line_end < read_size && buffer[line_end] != '\n') {
                 line_end++;
             }
             size_t line_length = line_end - line_start;
             
-            // Create temporary buffers for the full original line and the modified line.
+            // Create temporary buffers for the full original line and the modified line
             char old_line[line_length + 1];
             char new_line[line_length + 1];
             memcpy(old_line, &buffer[line_start], line_length);
             old_line[line_length] = '\0';
-            memcpy(new_line, old_line, line_length + 1);  // Copy the entire line.
+            memcpy(new_line, old_line, line_length + 1);  // Copy the entire line
             
-            // Replace the occurrence in new_line with asterisks.
-            size_t pos_in_line = i - line_start;  // position relative to the beginning of the line.
+            // Replace the occurrence in new_line with asterisks
+            size_t pos_in_line = i - line_start;  // position relative to the beginning of the line
             for (size_t j = 0; j < word_len; j++) {
                 new_line[pos_in_line + j] = '*';
             }
             
-            // Ask the user for confirmation using the full line.
-            // (Here we use changes->nb_lines + 1 to represent the current line number.)
+            // Ask the user for confirmation using the full line
             if(global_apply_all==0){
                 int decision = confirm_User_Changes(old_line, current_line + 1, new_line, current_line + 1);
                 if (decision == 3) { // Quit.
@@ -169,7 +170,7 @@ struct file_changes* change_file_RC(char* buffer, size_t read_size, size_t word_
                     global_apply_all = 1;
                 }
             }
-            // If decision is 0 (Yes) or 2 (All), proceed with replacement.
+            // If decision is 0 (Yes) or 2 (All), proceed with replacement
             
 
             replace_Word(buffer, word_len, i, asterisk_word);
@@ -178,7 +179,7 @@ struct file_changes* change_file_RC(char* buffer, size_t read_size, size_t word_
                 changes->nb_lines_changed++;
                 line_changed = 1;
             }
-            // Skip past the replaced word.
+            // Skip past the replaced word
             i += word_len - 1;
         }
     }
@@ -207,58 +208,57 @@ struct file_changes* change_file_RI(char* buffer, size_t read_size, size_t word_
     int current_line=0;
 
     for (size_t i = 0; i < read_size; i++) {
-        // Count lines: every newline marks the end of a line.
+        // Count lines: every newline marks the end of a line
         if (buffer[i] == '\n') {
             current_line++;
-            line_changed = 0; // Reset for the new line.
+            line_changed = 0; // Reset for the new line
         }
 
         char lower_case_word[word_len + 1];
         strncpy(lower_case_word, &buffer[i], word_len);
-        lower_case_word[word_len] = '\0'; // Ensure null termination.
+        lower_case_word[word_len] = '\0'; // Ensure null termination
         strlwr(lower_case_word);
 
-        // Check if the target word occurs at this position.
+        // Check if the target word occurs at this position
         if (i <= read_size - word_len && strncmp(lower_case_word, given_word_lower_case, word_len) == 0) {
-            // Determine the start of the current line.
+            // Determine the start of the current line
             size_t line_start = i;
             while (line_start > 0 && buffer[line_start - 1] != '\n') {
                 line_start--;
             }
-            // Determine the end of the current line.
+            // Determine the end of the current line
             size_t line_end = i;
             while (line_end < read_size && buffer[line_end] != '\n') {
                 line_end++;
             }
             size_t line_length = line_end - line_start;
             
-            // Create temporary buffers for the full original line and the modified line.
+            // Create temporary buffers for the full original line and the modified line
             char old_line[line_length + 1];
             char new_line[line_length + 1];
             memcpy(old_line, &buffer[line_start], line_length);
             old_line[line_length] = '\0';
-            memcpy(new_line, old_line, line_length + 1);  // Copy the entire line.
+            memcpy(new_line, old_line, line_length + 1);  // Copy the entire line
             
-            // Replace the occurrence in new_line with asterisks.
-            size_t pos_in_line = i - line_start;  // position relative to the beginning of the line.
+            // Replace the occurrence in new_line with asterisks
+            size_t pos_in_line = i - line_start;  // position relative to the beginning of the line
             for (size_t j = 0; j < word_len; j++) {
                 new_line[pos_in_line + j] = '*';
             }
             
             // Ask the user for confirmation using the full line.
-            // (Here we use changes->nb_lines + 1 to represent the current line number.)
             if(global_apply_all==0){
                 int decision = confirm_User_Changes(old_line, current_line + 1, new_line, current_line + 1);
                 if (decision == 3) { // Quit.
                     break;
-                } else if (decision == 1) { // Reject this occurrence.
+                } else if (decision == 1) { // Reject this occurrence
                     i += word_len - 1;
                     continue;
-                } else if (decision == 2) { // Apply all changes without further prompting.
+                } else if (decision == 2) { // Apply all changes without further prompting
                     global_apply_all = 1;
                 }
             }
-            // If decision is 0 (Yes) or 2 (All), proceed with replacement.
+            // If decision is 0 (Yes) or 2 (All), proceed with replacement
             replace_Word(buffer, word_len, i, asterisk_word);
             changes->nb_words_changed++;
             if (!line_changed) {
@@ -277,91 +277,68 @@ struct file_changes* change_file_UK(char* buffer, size_t read_size, size_t word_
     int line_changed = 0;
 
     int current_line=1;
-    char asterisk_seq[word_len + 1];
-    for (size_t k = 0; k < word_len; k++) {
-        asterisk_seq[k] = '*';
-    }
-    asterisk_seq[word_len] = '\0';
 
     for (size_t i = 0; i < read_size; i++) {
-        // Count newlines.
+        // Count newlines
         if (buffer[i] == '\n') {
             current_line++;
-            line_changed = 0; // Reset for the new line.
+            line_changed = 0; // Reset for the new line
         }
 
-        // Ensure there are enough characters left for a full match.
+        // Ensure there are enough characters left for a full match
         if (i > read_size - word_len) {
             break;
         }
 
         int is_exact_asterisks = check_exact_asterisk(word_len,read_size,buffer,i);
-        for (size_t j = 0; j < word_len; j++) {
-            if (buffer[i + j] != '*') {
-                is_exact_asterisks = 0;
-                break;
-            }
-        }
-
-        // Verify that the sequence is not part of a longer asterisk run.
-        if (is_exact_asterisks) {
-            // Check the character before the sequence (if any)
-            if (i > 0 && buffer[i - 1] == '*') {
-                is_exact_asterisks = 0;
-            }
-            // Check the character after the sequence (if any)
-            if (i + word_len < read_size && buffer[i + word_len] == '*') {
-                is_exact_asterisks = 0;
-            }
-        }
 
         if (is_exact_asterisks) {
-            // Determine the start of the current line.
+            // Determine the start of the current line
             size_t line_start = i;
             while (line_start > 0 && buffer[line_start - 1] != '\n') {
                 line_start--;
             }
-            // Determine the end of the current line.
+            // Determine the end of the current line
             size_t line_end = i;
             while (line_end < read_size && buffer[line_end] != '\n') {
                 line_end++;
             }
             size_t line_length = line_end - line_start;
             
-            // Copy the current line for display.
+            // Copy the current line for display
             char old_line[line_length + 1];
             char new_line[line_length + 1];
             memcpy(old_line, &buffer[line_start], line_length);
             old_line[line_length] = '\0';
             memcpy(new_line, old_line, line_length + 1);
 
-            // Replace the occurrence in new_line with asterisks.
+            // Replace the occurrence in new_line with asterisks
             size_t pos_in_line = i - line_start;  
             for (size_t j = 0; j < word_len; j++) {
                 new_line[pos_in_line + j] = word[j];
             }
 
-            // Confirm the change with the user.
+            // Confirm the change with the user
             if (global_apply_all == 0) {
                 int decision = confirm_User_Changes(old_line, current_line, new_line, current_line);
                 if (decision == 3) { // Quit.
                     break;
-                } else if (decision == 1) { // Reject this occurrence.
+                } else if (decision == 1) { // Reject this occurrence
                     i += word_len - 1;
                     continue;
-                } else if (decision == 2) { // Apply all without further prompting.
+                } else if (decision == 2) { // Apply all without further prompting
                     global_apply_all = 1;
                 }
             }
             
-            // Replace the asterisks with the exact word.
+            // Replace the asterisks with the exact word
             replace_Word(buffer, word_len, i, word);
             changes->nb_words_changed++;
             if (!line_changed) {
                 changes->nb_lines_changed++;
                 line_changed = 1;
             }
-            // Skip past the replaced word.
+            // Skip past the replaced word
             i += word_len - 1;
         }
     }
