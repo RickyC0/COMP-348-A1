@@ -42,6 +42,14 @@ struct file_changes* process_command(int command, char* buffer, size_t read_size
     return changes;
 }
 
+char* strlwr_custom(char* s) {
+    char *p = s;
+    while (*p) {
+        *p = tolower((unsigned char)*p);
+        p++;
+    }
+    return s;
+}
 
 struct file_changes* search_and_change_file(FILE* file, char* word, int command, struct file_changes* changes) {
     size_t word_len = strlen(word);
@@ -217,7 +225,7 @@ struct file_changes* change_file_RI(char* buffer, size_t read_size, size_t word_
         char lower_case_word[word_len + 1];
         strncpy(lower_case_word, &buffer[i], word_len);
         lower_case_word[word_len] = '\0'; // Ensure null termination
-        strlwr(lower_case_word);
+        strlwr_custom(lower_case_word);
 
         // Check if the target word occurs at this position
         if (i <= read_size - word_len && strncmp(lower_case_word, given_word_lower_case, word_len) == 0) {
