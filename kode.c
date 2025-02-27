@@ -19,7 +19,7 @@ int get_command_code(const char *cmd_str) {
 int main(int argc, char *argv[]){
     char* command_str=argv[1];
     char* word=argv[2];
-    char* file_name=argv[3];
+    
 
     struct file_changes changes = {0, 0, 0, 0};
 

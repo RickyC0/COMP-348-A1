@@ -6,6 +6,7 @@
 #include <string.h>
 #include <ctype.h>
 
+static int global_apply_all = 0;
 
 FILE* check_file(char* file_name) {
     FILE* file = fopen(file_name, "r+");

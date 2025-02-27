@@ -11,8 +11,6 @@ struct file_changes{
 
 };
 
-static int global_apply_all = 0;
-
 /**
  * @brief Checks if the file is not null
  * 
