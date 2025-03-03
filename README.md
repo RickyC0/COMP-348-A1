@@ -31,18 +31,14 @@ This project is designed to compile and run on a standard Linux system (e.g., Ub
 
 ## Compilation Instructions
 
-### On Windows
+### Windows and Linux
 
-Open your Windows terminal and run:
+Open your terminal and run:
 
 ```bash
 gcc -o kode -Wall kode.c fileread.c wreplace.c ui.c
 ```
 
-### On Linux (or via Windows WSL)
-```bash
-gcc -Wall -o kode kode.c fileread.c wreplace.c ui.c
-```
 
 ## Running the Application
 After compilation, run the program using the following syntax:
